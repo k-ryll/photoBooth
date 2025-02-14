@@ -67,7 +67,7 @@ footer span {
 }
 
 img{
-    border: 2px solid rgb(199, 82, 102) !important;
+    border: 2px solid rgb(199, 82, 102) ;
 }
 .webcam{
     border: 2px solid rgb(199, 82, 102) !important;
@@ -76,5 +76,5 @@ img{
 .strip{
     display: flex;
     flex-direction: column;
-    
+
 }

@@ -78,7 +78,9 @@ const WebcamCapture = () => {
       return img;
     });
 
-    Promise.all(imgElements.map((img) => new Promise((res) => (img.onload = res)))).then(() => {
+    Promise.all(
+      imgElements.map((img) => new Promise((res) => (img.onload = res)))
+    ).then(() => {
       const imgWidth = imgElements[0].width;
       const imgHeight = imgElements[0].height;
       const spacing = 20; // Space between images
@@ -112,7 +114,12 @@ const WebcamCapture = () => {
       // Optional border
       ctx.lineWidth = borderWidth;
       ctx.strokeStyle = "#FFC0CB";
-      ctx.strokeRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth);
+      ctx.strokeRect(
+        borderWidth / 2,
+        borderWidth / 2,
+        width - borderWidth,
+        height - borderWidth
+      );
 
       // Draw images centered horizontally
       imgElements.forEach((img, index) => {
@@ -161,7 +168,9 @@ const WebcamCapture = () => {
       return img;
     });
 
-    Promise.all(imgElements.map((img) => new Promise((res) => (img.onload = res)))).then(() => {
+    Promise.all(
+      imgElements.map((img) => new Promise((res) => (img.onload = res)))
+    ).then(() => {
       const imgWidth = imgElements[0].width;
       const imgHeight = imgElements[0].height;
       const spacing = 10;
@@ -199,31 +208,30 @@ const WebcamCapture = () => {
         ctx.drawImage(img, x, y, imgWidth, imgHeight);
       });
 
-      
-
       // Load the frame overlay image (PNG with transparency)
       const frameOverlay = new Image();
-      frameOverlay.src = "/coquette-frame.png"; // <-- update this path!
+      frameOverlay.src = "/coquette-frame.png"; // <-- update this path as needed
 
       frameOverlay.onload = () => {
         // Draw the frame overlay on top of the entire canvas
         ctx.drawImage(frameOverlay, 0, 0, width, height);
-        // Caption area
-      ctx.fillStyle = "#FF8CA2";
-      ctx.fillRect(0, height - footerHeight - captionHeight, width, captionHeight);
-      ctx.fillStyle = "#000";
-      ctx.font = "bold 18px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(caption, width / 2, height - footerHeight - 15);
 
-      // Footer area
-      ctx.fillStyle = "#FF8CA2";
-      ctx.fillRect(0, height - footerHeight, width, footerHeight);
-      ctx.fillStyle = "#000";
-      ctx.font = "bold 20px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("Photo Booth", width / 2, height - 50);
-      ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
+        // Caption area
+        ctx.fillStyle = "#FF8CA2";
+        ctx.fillRect(0, height - footerHeight - captionHeight, width, captionHeight);
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(caption, width / 2, height - footerHeight - 15);
+
+        // Footer area
+        ctx.fillStyle = "#FF8CA2";
+        ctx.fillRect(0, height - footerHeight, width, footerHeight);
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 20px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Photo Booth", width / 2, height - 50);
+        ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
 
         // Download the final image as PNG
         canvas.toBlob((blob) => {
