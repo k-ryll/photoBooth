@@ -157,13 +157,7 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
 
       <br />
       
-      <input 
-        type="text" 
-        placeholder="Enter your caption..." 
-        value={caption} 
-        onChange={(e) => setCaption(e.target.value)} 
-        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "80%" }}
-      />
+      
   <div>
   <button onClick={() => setFlipped((prev) => !prev)}>Flip</button>
       <button onClick={startAutoCapture} disabled={capturing}>
@@ -173,7 +167,17 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
       
 
       {images.length === 3 && (
-        <button onClick={mergeImages}>Download Photobooth Strip</button>
+        <div className="
+        strip"><input 
+        type="text" 
+        placeholder="Enter your caption..." 
+        value={caption} 
+        onChange={(e) => setCaption(e.target.value)} 
+        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "100%" }}
+      />
+      <button onClick={mergeImages}>Download Photobooth Strip</button>
+      </div>
+        
       )}
 
       {/* Display Captured Images */}

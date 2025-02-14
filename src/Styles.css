@@ -72,3 +72,9 @@ img{
 .webcam{
     border: 2px solid rgb(199, 82, 102) !important;
 }
+
+.strip{
+    display: flex;
+    flex-direction: column;
+    
+}
