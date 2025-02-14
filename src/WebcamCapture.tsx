@@ -147,7 +147,6 @@ const WebcamCapture = () => {
   return (
     <div className='booth' style={{ textAlign: "center" }}>
 
-      
 <Webcam
     className="webcam"
     audio={false}
