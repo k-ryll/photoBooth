@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import Webcam from "react-webcam";
+import { v4 as uuidv4 } from 'uuid';
 
 const WebcamCapture = () => {
   const webcamRef = useRef<Webcam>(null);
@@ -69,13 +70,13 @@ const WebcamCapture = () => {
   // Combine images into a photobooth strip with a border, background, and text
   const mergeImages = () => {
     if (images.length < 3) return;
-
+  
     const imgElements = images.map((src) => {
       const img = new Image();
       img.src = src;
       return img;
     });
-
+  
     Promise.all(imgElements.map(img => new Promise((res) => img.onload = res))).then(() => {
       const imgWidth = imgElements[0].width;
       const imgHeight = imgElements[0].height;
@@ -87,30 +88,31 @@ const WebcamCapture = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-
+  
       const width = imgWidth + borderWidth * 6;
       const height = headerHeight + captionHeight + imgHeight * 3 + spacing * 2 + footerHeight + borderWidth * 2;
-
+  
       canvas.width = width;
       canvas.height = height;
-
+  
       // Background color
-      ctx.fillStyle = "#FFC0CB"; // Change background color here
-      ctx.fillRect(0, 0, width , height);
-      // header
       ctx.fillStyle = "#FFC0CB";
+      ctx.fillRect(0, 0, width , height);
+  
+      // Header
       ctx.fillRect(0,0,width,headerHeight);
+  
       // Draw border
       ctx.fillStyle = "#FFC0CB"; // Border color
       ctx.fillRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth);
-
+  
       // Draw images
       imgElements.forEach((img, index) => {
-
         const x = (width - imgWidth) / 2; // Centers image horizontally
-const y = headerHeight + index * (imgHeight + spacing);
-ctx.drawImage(img, x, y, imgWidth, imgHeight);
+        const y = headerHeight + index * (imgHeight + spacing);
+        ctx.drawImage(img, x, y, imgWidth, imgHeight);
       });
+  
       // Draw caption
       ctx.fillStyle = "#FFC0CB"; 
       ctx.fillRect(0, height - footerHeight - captionHeight, width, captionHeight);
@@ -119,7 +121,7 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
       ctx.font = "bold 18px Arial";
       ctx.textAlign = "center";
       ctx.fillText(caption, width / 2, height - footerHeight - 15); 
-
+  
       // Footer text
       ctx.fillStyle = "#FFC0CB"; // Footer background
       ctx.fillRect(0, height - footerHeight, width, footerHeight);
@@ -129,15 +131,16 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
       ctx.textAlign = "center";
       ctx.fillText("Photo Booth", width / 2, height - 50);
       ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
-
+  
       // Convert to image and allow download
       const mergedImage = canvas.toDataURL("image/jpeg");
       const link = document.createElement("a");
       link.href = mergedImage;
-      link.download = "photobooth.jpg";
+      link.download = `photobooth_ryll${uuidv4()}.jpg`; // Unique filename
       link.click();
     });
   };
+  
   
   return (
     <div className='booth' style={{ textAlign: "center" }}>
