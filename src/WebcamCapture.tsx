@@ -41,8 +41,8 @@ const WebcamCapture = () => {
     }, 1000);
   };
 
-  // Capture & Flip Image
-  const capture = useCallback(() => {
+   // Capture & Flip Image
+   const capture = useCallback(() => {
     if (webcamRef.current) {
       const video = webcamRef.current.video;
       if (!video) return;
@@ -66,6 +66,7 @@ const WebcamCapture = () => {
       });
     }
   }, []);
+  
 
   // Combine images into a photobooth strip with a border, background, and text
   const mergeImages = () => {
@@ -133,28 +134,12 @@ const WebcamCapture = () => {
       ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
   
      // Convert to image
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-
-      const file = new File([blob], `photobooth_${uuidv4()}.jpg`, { type: "image/jpeg" });
-
-      if (navigator.share) {
-        navigator.share({
-          files: [file],
-          title: "Photobooth Image",
-          text: "Here's your photobooth image!",
-        }).catch(err => console.log("Sharing failed", err));
-      } else {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = file.name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-    }, "image/jpeg");
+    // Convert to image and allow download
+    const mergedImage = canvas.toDataURL("image/jpeg");
+    const link = document.createElement("a");
+    link.href = mergedImage;
+    link.download = `photobooth_${uuidv4()}.jpg`; // Unique filename
+    link.click();
     });
   };
   
@@ -163,16 +148,17 @@ const WebcamCapture = () => {
     <div className='booth' style={{ textAlign: "center" }}>
 
       
-      <Webcam 
-      className="webcam"
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={400}
-        videoConstraints={{ facingMode: "user" }}
-        style={{ transform: flipped ? "scaleX(-1)" : "none" }}
-      />
-
+<Webcam
+    className="webcam"
+    audio={false}
+    ref={webcamRef}
+    screenshotFormat="image/jpeg"
+    width={400}
+    videoConstraints={{ facingMode: "user" }}
+    style={{ transform: flipped ? "scaleX(-1)" : "none" }}
+  />
+  
+  
       {countdown !== null && <h2 style={{ fontSize: "2rem" }}>{countdown}</h2>}
 
       <br />
