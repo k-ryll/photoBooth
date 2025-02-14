@@ -165,7 +165,7 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
         style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "80%" }}
       />
   <div>
-  <button onClick={() => setFlipped((prev) => !prev)}>Flip Live View</button>
+  <button onClick={() => setFlipped((prev) => !prev)}>Flip</button>
       <button onClick={startAutoCapture} disabled={capturing}>
         {capturing ? `Capturing...` : `Start Photobooth`}
       </button>
