@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import Webcam from "react-webcam";
-import { v4 as uuidv4 } from "uuid"; // Unique file names
+import { v4 as uuidv4 } from 'uuid';
 
 const WebcamCapture = () => {
   const webcamRef = useRef<Webcam>(null);
@@ -10,7 +10,7 @@ const WebcamCapture = () => {
   const [capturing, setCapturing] = useState(false);
   const [caption, setCaption] = useState("");
 
-  // Function to start automatic capture (3 pics, 5 sec apart)
+  // Function to start automatic capture (3 pics, 5 seconds apart)
   const startAutoCapture = () => {
     if (capturing) return;
     setImages([]); // Clear previous photos
@@ -67,8 +67,9 @@ const WebcamCapture = () => {
     }
   }, []);
 
-  // Combine images into a photobooth strip with footer
-  const mergeImages = () => {
+  // Combine images into a photobooth strip with a border, background, and text
+   // Combine images into a photobooth strip with footer
+   const mergeImages = () => {
     if (images.length < 3) return;
 
     const imgElements = images.map((src) => {
@@ -146,10 +147,13 @@ const WebcamCapture = () => {
     });
   };
   
+  
   return (
     <div className='booth' style={{ textAlign: "center" }}>
+
+      
       <Webcam 
-        className="webcam"
+      className="webcam"
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
@@ -161,34 +165,32 @@ const WebcamCapture = () => {
       {countdown !== null && <h2 style={{ fontSize: "2rem" }}>{countdown}</h2>}
 
       <br />
-      <input 
+      
+      
+  <div>
+  <button onClick={() => setFlipped((prev) => !prev)}>Flip</button>
+      <button onClick={startAutoCapture} disabled={capturing}>
+        {capturing ? `Capturing...` : `Start Photobooth`}
+      </button>
+  </div>
+      
+
+      {images.length === 3 && (
+        <div className="
+        strip"><input 
         type="text" 
         placeholder="Enter your caption..." 
         value={caption} 
         onChange={(e) => setCaption(e.target.value)} 
-        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "80%" }}
+        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "100%" }}
       />
-  
-      <div>
-        <button onClick={() => setFlipped((prev) => !prev)}>Flip Live View</button>
-        <button onClick={startAutoCapture} disabled={capturing}>
-          {capturing ? `Capturing...` : `Start Photobooth`}
-        </button>
+      <button onClick={mergeImages}>Download Photobooth Strip</button>
       </div>
-      
-      {images.length === 3 && (
-        <button onClick={mergeImages}>Download Photobooth Strip</button>
+        
       )}
 
-      {/* Scrollable Captured Images */}
-      <div style={{
-        display: "flex",
-        gap: "10px",
-        marginTop: "10px",
-        overflowX: "auto", // Scrollable on small screens
-        maxWidth: "100%",
-        padding: "10px"
-      }}>
+      {/* Display Captured Images */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
         {images.map((img, index) => (
           <img
             key={index}
@@ -199,7 +201,6 @@ const WebcamCapture = () => {
               height: "150px",
               border: "5px solid black",
               borderRadius: "8px",
-              flexShrink: 0
             }}
           />
         ))}
