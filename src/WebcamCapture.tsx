@@ -140,10 +140,11 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
   };
   
   return (
-    <div style={{ textAlign: "center" }}>
-      <h2>PhotoBooth</h2>
+    <div className='booth' style={{ textAlign: "center" }}>
+
       
-      <Webcam
+      <Webcam 
+      className="webcam"
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
@@ -163,11 +164,13 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
         onChange={(e) => setCaption(e.target.value)} 
         style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "80%" }}
       />
-
-      <button onClick={() => setFlipped((prev) => !prev)}>Flip Live View</button>
+  <div>
+  <button onClick={() => setFlipped((prev) => !prev)}>Flip Live View</button>
       <button onClick={startAutoCapture} disabled={capturing}>
         {capturing ? `Capturing...` : `Start Photobooth`}
       </button>
+  </div>
+      
 
       {images.length === 3 && (
         <button onClick={mergeImages}>Download Photobooth Strip</button>
@@ -181,7 +184,7 @@ ctx.drawImage(img, x, y, imgWidth, imgHeight);
             src={img}
             alt={`Captured ${index + 1}`}
             style={{
-              width: "150px",
+              width: "200px",
               height: "150px",
               border: "5px solid black",
               borderRadius: "8px",

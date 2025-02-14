@@ -1,9 +1,29 @@
-html, body, #root{
-    height: 100vh;
-    width: 100%;
+:root {
+    --background-color: white;
+    --text-color: black;
+    --button-background: pink;
+    --button-hover-background: rgb(232, 75, 75);
+    --button-hover-color: white;
+    --footer-color: pink;
 }
 
-.container{
+[data-theme='dark'] {
+    --background-color: #1a1a1a;
+    --text-color: white;
+    --button-background: #333;
+    --button-hover-background: #555;
+    --button-hover-color: white;
+    --footer-color: #ff6666;
+}
+
+html, body, #root {
+    height: 100vh;
+    width: 100%;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11,6 +31,44 @@ html, body, #root{
     gap: 2rem;
 }
 
-.booth{
+h1 {
+    color: var(--text-color);
+}
+
+.booth {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.booth div {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding-bottom: 10px;
+}
+
+button {
+    background-color: var(--button-background);
+    cursor: pointer;
+    border: 0;
+    padding: .5rem;
+    border-radius: 10px;
+    color: var(--text-color);
+}
+
+button:hover {
+    background-color: var(--button-hover-background);
+    color: var(--button-hover-color);
+}
+
+footer span {
+    color: var(--footer-color);
+}
+
+img{
+    border: 2px solid rgb(199, 82, 102) !important;
+}
+.webcam{
+    border: 2px solid rgb(199, 82, 102) !important;
 }

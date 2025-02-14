@@ -8,11 +8,23 @@
   margin: 0;
 }
 
+:root {
+  --background-color: white;
+  --text-color: black;
+}
+
+[data-theme='dark'] {
+  --background-color: black;
+  --text-color: white;
+}
+
 body {
   /* 3. Add accessible line-height */
   line-height: 1.5;
   /* 4. Improve text rendering */
   -webkit-font-smoothing: antialiased;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 /* 5. Improve media defaults */
