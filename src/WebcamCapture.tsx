@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import Webcam from "react-webcam";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid"; // Unique file names
 
 const WebcamCapture = () => {
   const webcamRef = useRef<Webcam>(null);
@@ -10,7 +10,7 @@ const WebcamCapture = () => {
   const [capturing, setCapturing] = useState(false);
   const [caption, setCaption] = useState("");
 
-  // Function to start automatic capture (3 pics, 5 seconds apart)
+  // Function to start automatic capture (3 pics, 5 sec apart)
   const startAutoCapture = () => {
     if (capturing) return;
     setImages([]); // Clear previous photos
@@ -67,16 +67,16 @@ const WebcamCapture = () => {
     }
   }, []);
 
-  // Combine images into a photobooth strip with a border, background, and text
+  // Combine images into a photobooth strip with footer
   const mergeImages = () => {
     if (images.length < 3) return;
-  
+
     const imgElements = images.map((src) => {
       const img = new Image();
       img.src = src;
       return img;
     });
-  
+
     Promise.all(imgElements.map(img => new Promise((res) => img.onload = res))).then(() => {
       const imgWidth = imgElements[0].width;
       const imgHeight = imgElements[0].height;
@@ -85,63 +85,71 @@ const WebcamCapture = () => {
       const footerHeight = 80;
       const headerHeight = 40;
       const captionHeight = 50;
+
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-  
+
       const width = imgWidth + borderWidth * 6;
       const height = headerHeight + captionHeight + imgHeight * 3 + spacing * 2 + footerHeight + borderWidth * 2;
-  
+
       canvas.width = width;
       canvas.height = height;
-  
-      // Background color
-      ctx.fillStyle = "#FFC0CB";
+
+      // Background
+      ctx.fillStyle = "#FFC0CB"; // Light pink
       ctx.fillRect(0, 0, width, height);
-  
+
       // Header
+      ctx.fillStyle = "#FFC0CB";
       ctx.fillRect(0, 0, width, headerHeight);
-  
+
+      // Border
+      ctx.fillStyle = "#FFC0CB";
+      ctx.fillRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth);
+
       // Draw images
       imgElements.forEach((img, index) => {
-        const x = (width - imgWidth) / 2;
+        const x = (width - imgWidth) / 2; 
         const y = headerHeight + index * (imgHeight + spacing);
         ctx.drawImage(img, x, y, imgWidth, imgHeight);
       });
-  
-      // Convert to image
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-  
-        const file = new File([blob], `photobooth_${uuidv4()}.jpg`, { type: "image/jpeg" });
-  
-        if (navigator.share) {
-          navigator.share({
-            files: [file],
-            title: "Photobooth Image",
-            text: "Here's your photobooth image!",
-          }).catch(err => console.log("Sharing failed", err));
-        } else {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = file.name;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }
-      }, "image/jpeg");
+
+      // Caption Box
+      ctx.fillStyle = "#FFC0CB";
+      ctx.fillRect(0, height - footerHeight - captionHeight, width, captionHeight);
+      
+      ctx.fillStyle = "#000";
+      ctx.font = "bold 18px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(caption, width / 2, height - footerHeight - 15);
+
+      // Footer with "Photo Booth" text and date
+      ctx.fillStyle = "#FFC0CB"; 
+      ctx.fillRect(0, height - footerHeight, width, footerHeight);
+
+      ctx.fillStyle = "#000"; 
+      ctx.font = "bold 20px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("Photo Booth", width / 2, height - 50);
+      ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
+
+      // Convert to image and allow download
+      const mergedImage = canvas.toDataURL("image/jpeg");
+
+      // Fix for Messenger: Open image in a new tab instead of direct download
+      const link = document.createElement("a");
+      link.href = mergedImage;
+      link.target = "_blank"; // Opens in a new tab
+      link.download = `photobooth-${uuidv4()}.jpg`; // Unique name
+      link.click();
     });
   };
   
-  
   return (
     <div className='booth' style={{ textAlign: "center" }}>
-
-      
       <Webcam 
-      className="webcam"
+        className="webcam"
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
@@ -153,32 +161,34 @@ const WebcamCapture = () => {
       {countdown !== null && <h2 style={{ fontSize: "2rem" }}>{countdown}</h2>}
 
       <br />
-      
-      
-  <div>
-  <button onClick={() => setFlipped((prev) => !prev)}>Flip</button>
-      <button onClick={startAutoCapture} disabled={capturing}>
-        {capturing ? `Capturing...` : `Start Photobooth`}
-      </button>
-  </div>
-      
-
-      {images.length === 3 && (
-        <div className="
-        strip"><input 
+      <input 
         type="text" 
         placeholder="Enter your caption..." 
         value={caption} 
         onChange={(e) => setCaption(e.target.value)} 
-        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "100%" }}
+        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "80%" }}
       />
-      <button onClick={mergeImages}>Download Photobooth Strip</button>
+  
+      <div>
+        <button onClick={() => setFlipped((prev) => !prev)}>Flip Live View</button>
+        <button onClick={startAutoCapture} disabled={capturing}>
+          {capturing ? `Capturing...` : `Start Photobooth`}
+        </button>
       </div>
-        
+      
+      {images.length === 3 && (
+        <button onClick={mergeImages}>Download Photobooth Strip</button>
       )}
 
-      {/* Display Captured Images */}
-      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
+      {/* Scrollable Captured Images */}
+      <div style={{
+        display: "flex",
+        gap: "10px",
+        marginTop: "10px",
+        overflowX: "auto", // Scrollable on small screens
+        maxWidth: "100%",
+        padding: "10px"
+      }}>
         {images.map((img, index) => (
           <img
             key={index}
@@ -189,6 +199,7 @@ const WebcamCapture = () => {
               height: "150px",
               border: "5px solid black",
               borderRadius: "8px",
+              flexShrink: 0
             }}
           />
         ))}
