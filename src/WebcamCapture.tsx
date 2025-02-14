@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import Webcam from "react-webcam";
 
 const WebcamCapture = () => {
@@ -6,21 +6,36 @@ const WebcamCapture = () => {
   const [images, setImages] = useState<string[]>([]);
   const [flipped, setFlipped] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [imageCount, setImageCount] = useState(1);
+  const [capturing, setCapturing] = useState(false);
+  const [caption, setCaption] = useState("");
 
-  // Countdown before capturing
-  const startCountdown = () => {
-    let count = 3;
-    setCountdown(count);
+  // Function to start automatic capture (3 pics, 5 seconds apart)
+  const startAutoCapture = () => {
+    if (capturing) return;
+    setImages([]); // Clear previous photos
+    setCapturing(true);
+    captureWithDelay(3, 5);
+  };
+
+  // Recursive function to capture images with a delay
+  const captureWithDelay = (count: number, delay: number) => {
+    if (count === 0) {
+      setCapturing(false);
+      return;
+    }
+
+    setCountdown(delay);
+    let timer = delay;
 
     const interval = setInterval(() => {
-      count -= 1;
-      setCountdown(count);
+      timer -= 1;
+      setCountdown(timer);
 
-      if (count === 0) {
+      if (timer === 0) {
         clearInterval(interval);
         setCountdown(null);
         capture();
+        captureWithDelay(count - 1, delay);
       }
     }, 1000);
   };
@@ -31,45 +46,103 @@ const WebcamCapture = () => {
       const video = webcamRef.current.video;
       if (!video) return;
 
-      // Create a canvas to process the flipped image
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      // Set canvas size to match webcam video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // Flip the image by scaling negatively on X-axis
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Convert canvas image to data URL
       const flippedImage = canvas.toDataURL("image/jpeg");
 
-      // Save to state
       setImages((prevImages) => {
-        const updatedImages = [...prevImages];
-        updatedImages[imageCount - 1] = flippedImage;
-        return updatedImages;
+        const updatedImages = [...prevImages, flippedImage];
+        return updatedImages.length > 3 ? updatedImages.slice(-3) : updatedImages;
       });
-
-      // Cycle between 1 → 2 → 3 → back to 1
-      setImageCount((prev) => (prev < 3 ? prev + 1 : 1));
     }
-  }, [imageCount]);
-
-  // Flip only the live webcam view
-  const flipLiveView = useCallback(() => {
-    setFlipped((prev) => !prev);
   }, []);
 
+  // Combine images into a photobooth strip with a border, background, and text
+  const mergeImages = () => {
+    if (images.length < 3) return;
+
+    const imgElements = images.map((src) => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
+
+    Promise.all(imgElements.map(img => new Promise((res) => img.onload = res))).then(() => {
+      const imgWidth = imgElements[0].width;
+      const imgHeight = imgElements[0].height;
+      const spacing = 20; // Space between images
+      const borderWidth = 10; // Border thickness
+      const footerHeight = 80; // Space for footer text
+      const headerHeight = 40;
+      const captionHeight = 50;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const width = imgWidth + borderWidth * 6;
+      const height = headerHeight + captionHeight + imgHeight * 3 + spacing * 2 + footerHeight + borderWidth * 2;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Background color
+      ctx.fillStyle = "#FFC0CB"; // Change background color here
+      ctx.fillRect(0, 0, width , height);
+      // header
+      ctx.fillStyle = "#FFC0CB";
+      ctx.fillRect(0,0,width,headerHeight);
+      // Draw border
+      ctx.fillStyle = "#FFC0CB"; // Border color
+      ctx.fillRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth);
+
+      // Draw images
+      imgElements.forEach((img, index) => {
+
+        const x = (width - imgWidth) / 2; // Centers image horizontally
+const y = headerHeight + index * (imgHeight + spacing);
+ctx.drawImage(img, x, y, imgWidth, imgHeight);
+      });
+      // Draw caption
+      ctx.fillStyle = "#FFC0CB"; 
+      ctx.fillRect(0, height - footerHeight - captionHeight, width, captionHeight);
+      
+      ctx.fillStyle = "#000"; 
+      ctx.font = "bold 18px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(caption, width / 2, height - footerHeight - 15); 
+
+      // Footer text
+      ctx.fillStyle = "#FFC0CB"; // Footer background
+      ctx.fillRect(0, height - footerHeight, width, footerHeight);
+      
+      ctx.fillStyle = "#000"; // Text color
+      ctx.font = "bold 20px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("Photo Booth", width / 2, height - 50);
+      ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
+
+      // Convert to image and allow download
+      const mergedImage = canvas.toDataURL("image/jpeg");
+      const link = document.createElement("a");
+      link.href = mergedImage;
+      link.download = "photobooth.jpg";
+      link.click();
+    });
+  };
+  
   return (
     <div style={{ textAlign: "center" }}>
-      <span>{imageCount}/3</span>
-
-      {/* Webcam Preview */}
+      <h2>PhotoBooth</h2>
+      
       <Webcam
         audio={false}
         ref={webcamRef}
@@ -79,14 +152,26 @@ const WebcamCapture = () => {
         style={{ transform: flipped ? "scaleX(-1)" : "none" }}
       />
 
-      {/* Countdown Display */}
       {countdown !== null && <h2 style={{ fontSize: "2rem" }}>{countdown}</h2>}
 
-      {/* Buttons */}
-      <button onClick={flipLiveView}>Flip Live View</button>
-      <button onClick={startCountdown} disabled={countdown !== null}>
-        {countdown !== null ? `Taking photo...` : `Capture Photo`}
+      <br />
+      
+      <input 
+        type="text" 
+        placeholder="Enter your caption..." 
+        value={caption} 
+        onChange={(e) => setCaption(e.target.value)} 
+        style={{ padding: "10px", fontSize: "16px", marginBottom: "10px", width: "80%" }}
+      />
+
+      <button onClick={() => setFlipped((prev) => !prev)}>Flip Live View</button>
+      <button onClick={startAutoCapture} disabled={capturing}>
+        {capturing ? `Capturing...` : `Start Photobooth`}
       </button>
+
+      {images.length === 3 && (
+        <button onClick={mergeImages}>Download Photobooth Strip</button>
+      )}
 
       {/* Display Captured Images */}
       <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "10px" }}>
@@ -96,7 +181,9 @@ const WebcamCapture = () => {
             src={img}
             alt={`Captured ${index + 1}`}
             style={{
-              border: "2px solid #000",
+              width: "150px",
+              height: "150px",
+              border: "5px solid black",
               borderRadius: "8px",
             }}
           />
