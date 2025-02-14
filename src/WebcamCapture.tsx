@@ -143,7 +143,6 @@ const WebcamCapture = () => {
     });
   };
   
-  
   return (
     <div className='booth' style={{ textAlign: "center" }}>
 
