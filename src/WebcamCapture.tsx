@@ -203,7 +203,7 @@ const WebcamCapture = () => {
 
       // Load the frame overlay image (PNG with transparency)
       const frameOverlay = new Image();
-      frameOverlay.src = "/src/assets/frames/coquette-frame.png"; // <-- update this path!
+      frameOverlay.src = "coquette-frame.png"; // <-- update this path!
 
       frameOverlay.onload = () => {
         // Draw the frame overlay on top of the entire canvas
