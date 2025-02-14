@@ -68,82 +68,93 @@ const WebcamCapture = () => {
   }, []);
 
   // Combine images into a photobooth strip with a border, background, and text
-   // Combine images into a photobooth strip with footer
-   const mergeImages = () => {
+  const mergeImages = () => {
     if (images.length < 3) return;
-
+  
     const imgElements = images.map((src) => {
       const img = new Image();
       img.src = src;
       return img;
     });
-
+  
     Promise.all(imgElements.map(img => new Promise((res) => img.onload = res))).then(() => {
       const imgWidth = imgElements[0].width;
       const imgHeight = imgElements[0].height;
-      const spacing = 20;
-      const borderWidth = 10;
-      const footerHeight = 80;
+      const spacing = 20; // Space between images
+      const borderWidth = 10; // Border thickness
+      const footerHeight = 80; // Space for footer text
       const headerHeight = 40;
       const captionHeight = 50;
-
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-
+  
       const width = imgWidth + borderWidth * 6;
       const height = headerHeight + captionHeight + imgHeight * 3 + spacing * 2 + footerHeight + borderWidth * 2;
-
+  
       canvas.width = width;
       canvas.height = height;
-
-      // Background
-      ctx.fillStyle = "#FFC0CB"; // Light pink
-      ctx.fillRect(0, 0, width, height);
-
+  
+      // Background color
+      ctx.fillStyle = "#FFC0CB";
+      ctx.fillRect(0, 0, width , height);
+  
       // Header
-      ctx.fillStyle = "#FFC0CB";
-      ctx.fillRect(0, 0, width, headerHeight);
-
-      // Border
-      ctx.fillStyle = "#FFC0CB";
+      ctx.fillRect(0,0,width,headerHeight);
+  
+      // Draw border
+      ctx.fillStyle = "#FFC0CB"; // Border color
       ctx.fillRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth);
-
+  
       // Draw images
       imgElements.forEach((img, index) => {
-        const x = (width - imgWidth) / 2; 
+        const x = (width - imgWidth) / 2; // Centers image horizontally
         const y = headerHeight + index * (imgHeight + spacing);
         ctx.drawImage(img, x, y, imgWidth, imgHeight);
       });
-
-      // Caption Box
-      ctx.fillStyle = "#FFC0CB";
+  
+      // Draw caption
+      ctx.fillStyle = "#FFC0CB"; 
       ctx.fillRect(0, height - footerHeight - captionHeight, width, captionHeight);
       
-      ctx.fillStyle = "#000";
+      ctx.fillStyle = "#000"; 
       ctx.font = "bold 18px Arial";
       ctx.textAlign = "center";
-      ctx.fillText(caption, width / 2, height - footerHeight - 15);
-
-      // Footer with "Photo Booth" text and date
-      ctx.fillStyle = "#FFC0CB"; 
+      ctx.fillText(caption, width / 2, height - footerHeight - 15); 
+  
+      // Footer text
+      ctx.fillStyle = "#FFC0CB"; // Footer background
       ctx.fillRect(0, height - footerHeight, width, footerHeight);
-
-      ctx.fillStyle = "#000"; 
+      
+      ctx.fillStyle = "#000"; // Text color
       ctx.font = "bold 20px Arial";
       ctx.textAlign = "center";
       ctx.fillText("Photo Booth", width / 2, height - 50);
       ctx.fillText(new Date().toLocaleDateString(), width / 2, height - 25);
+  
+     // Convert to image
+    canvas.toBlob((blob) => {
+      if (!blob) return;
 
-      // Convert to image and allow download
-      const mergedImage = canvas.toDataURL("image/jpeg");
+      const file = new File([blob], `photobooth_${uuidv4()}.jpg`, { type: "image/jpeg" });
 
-      // Fix for Messenger: Open image in a new tab instead of direct download
-      const link = document.createElement("a");
-      link.href = mergedImage;
-      link.target = "_blank"; // Opens in a new tab
-      link.download = `photobooth-${uuidv4()}.jpg`; // Unique name
-      link.click();
+      if (navigator.share) {
+        navigator.share({
+          files: [file],
+          title: "Photobooth Image",
+          text: "Here's your photobooth image!",
+        }).catch(err => console.log("Sharing failed", err));
+      } else {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    }, "image/jpeg");
     });
   };
   
